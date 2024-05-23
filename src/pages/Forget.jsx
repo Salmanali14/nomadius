@@ -1,7 +1,60 @@
-import React from "react";
-
+import { equalTo, onValue, orderByChild, query, ref } from "firebase/database";
+import React, { useState } from "react";
+import { auth, db } from "../components/firebaseConfig";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Forget = () => {
+  const [email, setEmail] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [error, setError] = useState(null);
+  const handleResetPassword = async () => {
+    try {
+      if (!email) {
+       toast.error("Please enter a valid email address.")
+        return;
+      }
+
+      const emailRegEx =
+        /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z{2,8}])?/g;
+      if (!emailRegEx.test(email)) {
+        toast.error("Please enter a valid email address.")
+        return;
+      }
+
+      const deviceRef = query(
+        ref(db, "/User"),
+        orderByChild("email"),
+        equalTo(email)
+      );
+
+      onValue(deviceRef, (snapshot) => {
+        const userData = snapshot.val();
+        console.log(userData);
+  
+        if (!userData) {
+          toast.error("This email does not have an associated account.")
+          return;
+        }
+  
+        // Email exists, proceed with password reset
+        sendPasswordResetEmail(auth, email)
+          .then(() => {
+            toast.success("Password reset sent into your email. Check your email.")
+            setEmail("");
+          })
+          .catch((error) => {
+            console.error(error);
+            toast.error("Error sending password reset email.")
+          });
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Error sending password reset email.");
+    }
+  };
   return (
+    <>
     <div
       className="w-[100%] h-[100%] flex justify-center items-center"
       style={{
@@ -21,9 +74,10 @@ const Forget = () => {
                 type="text"
                 className="w-[100%] pl-[2%] h-[60px]  bg-[#fff] rounded-xl shadow-lg outline-none"
                 placeholder="Email"
+                value={email} onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="w-[100%] h-[60px] text-xl bg-[#57d678] rounded-xl shadow-lg cursor-pointer flex justify-center items-center text-white font-[500]">
+            <div onClick={handleResetPassword} className="w-[100%] h-[60px] text-xl bg-[#57d678] rounded-xl shadow-lg cursor-pointer flex justify-center items-center text-white font-[500]">
               Confirm
             </div>
           </div>
@@ -31,6 +85,11 @@ const Forget = () => {
         </div>
       </div>
     </div>
+    <ToastContainer
+    position="top-center"
+    reverseOrder={false}
+  />
+</>
   );
 };
 

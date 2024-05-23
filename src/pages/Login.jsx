@@ -1,9 +1,44 @@
-import React from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { auth, db } from "../components/firebaseConfig";
+import { ref, update } from "firebase/database";
+import { Slide, ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Login = () => {
   let navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+ 
+    if (email && password) {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          localStorage.setItem("useruid", user?.uid)
+              toast.success("Successfully Login!")
+              setTimeout(function() {
+                navigate("/");
+              }, 2000);
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          console.log(error.message);
+          if (error.code === "auth/invalid-email") {
+            toast.error("Invalid  Emial!")
+          } else if (error.code === "auth/invalid-credential") {
+            toast.error("Invalid password!")
+          } else {
+            toast.error(errorMessage);
+          }
+        });
+    } else {
+      toast.error("Email and password should not be empty!")
+    }
+  };
   return (
+    <>
     <div
       className="w-[100%] h-[100%] flex justify-center items-center"
       style={{
@@ -23,11 +58,13 @@ const Login = () => {
                 type="text"
                 className="w-[100%] pl-[2%] h-[60px]  bg-[#fff] rounded-xl shadow-lg outline-none"
                 placeholder="Email"
+                value={email} onChange={(e) => setEmail(e.target.value)} 
               />
               <input
                 type="text"
                 className="w-[100%] pl-[2%] h-[60px]  bg-[#fff] rounded-xl shadow-lg outline-none mt-5"
                 placeholder="Password"
+                value={password} onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
@@ -40,13 +77,26 @@ const Login = () => {
           </div>
           <div
             className="w-[100%] h-[60px] bg-[#57d678] rounded-xl shadow-lg cursor-pointer flex justify-center items-center text-white font-[500]"
-            onClick={() => navigate("/")}
+            onClick={() => handleLogin()}
           >
             LOG IN
           </div>
         </div>
       </div>
     </div>
+    <ToastContainer
+    position="top-center"
+    autoClose={2000} // Auto close after 3 seconds
+    hideProgressBar={false}
+    newestOnTop={false}
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    pauseOnHover
+    transition={Slide} // Optional transition effect
+  />
+    </>
   );
 };
 

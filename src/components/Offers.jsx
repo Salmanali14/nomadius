@@ -14,7 +14,7 @@ import tau from "../imgs/tau.png";
 import aircard from "../imgs/aircard.png";
 // import "../../App.css";
 
-const Offers = ({ offer, handleoffer }) => {
+const Offers = ({ offer, handleoffer,handleofferClose,bggcolor }) => {
   let screenWidth = screen.width;
   const style2 = {
     position: "absolute",
@@ -59,13 +59,15 @@ const Offers = ({ offer, handleoffer }) => {
         <Box sx={style2}>
           <div
             className={`h-[100%] w-[100%] overflow-y-scroll scrollbar-hide flex flex-col items-center  bg-[#f3f3f1]`}
-            // style={{ marginRight: screenWidth >= 900 ? "15px" : "0px" }}
+            style={{
+              background:bggcolor,
+           }}
           >
             <div className="w-[100%] flex justify-center items-center bg-[white] h-[12%] relative">
               <h2 className="font-[500] text-2xl">Rolling Square Club</h2>
               <RxCross1
                 className="text-2xl cursor-pointer absolute right-2"
-                onClick={() => handleoffer()}
+                onClick={() => handleofferClose()}
               />
             </div>
             <div className="w-[100%] h-[87%] flex justify-center items-center">
